@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class ListViewController: UIViewController {
+final class ListViewController: UIViewController, UISearchBarDelegate {
 
     private let listView: ListView = {
 
@@ -16,7 +16,13 @@ final class ListViewController: UIViewController {
     }()
 
     private let service = Service()
-
+    
+    let searchController: UISearchController = {
+       let searchController = UISearchController(searchResultsController: nil)
+        searchController.searchBar.placeholder = "Type a GitHub user name"
+        return searchController
+    }()
+    
     init() {
         super.init(nibName: nil, bundle: nil)
 
@@ -30,21 +36,25 @@ final class ListViewController: UIViewController {
 
         self.navigationController?.navigationBar.prefersLargeTitles = true
         self.navigationItem.title = "GitHub App 🐙"
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        
     }
 
     override func viewDidAppear(_ animated: Bool) {
 
-        service.fetchList { repositories in
-
-            DispatchQueue.main.async {
-
-                self.listView.updateView(with: repositories)
-            }
-        }
+        fetchRepositories()
 
     }
 
     override func loadView() {
         self.view = listView
+    }
+    
+    func fetchRepositories() {
+        listView.showLoadingView()
+        service.fetchList { repositories in
+            self.listView.updateView(with: repositories)
+        }
     }
 }

@@ -51,6 +51,10 @@ final class ListView: UIView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    func showLoadingView() {
+        loadingView.isHidden = false
+    }
 }
 
 private extension ListView {
@@ -79,6 +83,10 @@ private extension ListView {
             self.tableView.topAnchor.constraint(equalTo: self.topAnchor),
             self.tableView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             
+            self.emptyView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            self.emptyView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            self.emptyView.topAnchor.constraint(equalTo: self.topAnchor),
+            self.emptyView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             
             self.loadingView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             self.loadingView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
@@ -91,7 +99,12 @@ private extension ListView {
 extension ListView {
 
     func updateView(with repositories: [String]) {
-
+        loadingView.isHidden = true
+        if !repositories.isEmpty {
+            emptyView.isHidden = true
+        } else {
+            emptyView.isHidden = false
+        }
         self.listItems = repositories
         self.tableView.reloadData()
     }
