@@ -8,10 +8,23 @@
 import Foundation
 
 struct Service {
-
-    func fetchList(_ completion: @escaping ([String]) -> Void) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, qos: .userInitiated) {
-            completion(["Repository 1", "Repository 2", "Repository 3"])
+    
+    func fetchList(user: String, _ completion: @escaping ([Repository]) -> Void) {
+        guard let url = URL(string: "https://api.github.com/users/\(user)/repos") else {
+            return
         }
+        
+        
+        URLSession.shared.dataTask(with: url) { data, res, err in
+            guard err == nil, let data = data else {
+                completion([])
+                return
+            }
+            let jsonDecodable = JSONDecoder()
+            let repository = try? jsonDecodable.decode([Repository].self, from: data)
+            
+            completion(repository ?? [])
+        }.resume()
     }
+    
 }

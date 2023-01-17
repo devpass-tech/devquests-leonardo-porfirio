@@ -8,9 +8,8 @@
 import UIKit
 
 final class ListViewController: UIViewController, UISearchBarDelegate {
-
+    
     private let listView: ListView = {
-
         let listView = ListView()
         return listView
     }()
@@ -18,10 +17,12 @@ final class ListViewController: UIViewController, UISearchBarDelegate {
     private let service = Service()
     
     let searchController: UISearchController = {
-       let searchController = UISearchController(searchResultsController: nil)
+        let searchController = UISearchController(searchResultsController: nil)
         searchController.searchBar.placeholder = "Type a GitHub user name"
+        searchController.searchBar.sizeToFit()
         return searchController
     }()
+    
     
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -39,22 +40,39 @@ final class ListViewController: UIViewController, UISearchBarDelegate {
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
         
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-
-        fetchRepositories()
-
+        searchController.searchResultsUpdater = self
+        
     }
 
     override func loadView() {
         self.view = listView
     }
     
-    func fetchRepositories() {
-        listView.showLoadingView()
-        service.fetchList { repositories in
+}
+
+// MARK: fetch methods
+extension ListViewController {
+    
+    func fetchRepositoriesFrom(username: String) {
+        self.listView.showLoadingView()
+        self.service.fetchList(user: username) { repositories in
             self.listView.updateView(with: repositories)
+        }
+    }
+}
+
+// MARK: searchBarController
+extension ListViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        if !searchController.isActive {
+            return
+        }
+        
+        var filterString: String?
+        filterString = searchController.searchBar.text
+        
+        if let filterString {
+            self.fetchRepositoriesFrom(username: filterString)
         }
     }
 }
